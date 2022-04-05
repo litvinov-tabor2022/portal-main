@@ -35,7 +35,8 @@ bool Display::begin(StateManager *stateManager) {
 
     Core1.loopEvery("Display", 50, [this] {
         // redraw when asked, after modal was shown ("hide it") or when new modal is ready
-        if (waitingForRedraw || (displayingModalUntil > 0 && millis() > displayingModalUntil) || this->stateManager->hasModalMessage()) {
+        if (waitingForRedraw || (displayingModalUntil > 0 && millis() > displayingModalUntil) ||
+            this->stateManager->hasModalMessage()) {
             const AppState &appState = this->stateManager->getState();
             const std::optional<ModalMessage> modalMessage = this->stateManager->popModalMessage();
 
@@ -58,15 +59,15 @@ void Display::draw(const AppState state, const std::optional<ModalMessage> modal
     if (modalMessage.has_value()) {
         auto mm = modalMessage.value();
 
-        const auto bgColor = mm.modalMessageType == Info ? TFT_GREEN : TFT_RED;
+        const auto bgColor = mm.modalMessageType == Info ? TFT_ORANGE : TFT_RED;
         const auto fgColor = mm.modalMessageType == Info ? TFT_BLACK : TFT_WHITE;
-
+        const auto fontSize = mm.modalMessageType == Info ? 1 : 2;
         std::lock_guard<std::mutex> lg(HwLocks::SPI);
 
         tft.fillRoundRect(0, 0, TFT_HEIGHT, TFT_WIDTH, 5, bgColor);
-        tft.setCursor(0, 0, 2);
+        tft.setCursor(0, 0);
         tft.setTextColor(fgColor);
-        tft.setTextSize(2);
+        tft.setTextSize(fontSize);
         tft.println(mm.text);
 
         displayingModalUntil = millis() + (mm.modalMessageType == Info ? DISPLAY_INFO_TIMEOUT : DISPLAY_ERROR_TIMEOUT);
@@ -79,8 +80,16 @@ void Display::draw(const AppState state, const std::optional<ModalMessage> modal
     if (state.tagPresent) {
         playerDataStr += "Hrac ";
         playerDataStr += String(state.currentPlayerData.user_id);
-        playerDataStr += ", sila ";
+        playerDataStr += "\nsila.................";
         playerDataStr += String(state.currentPlayerData.strength);
+        playerDataStr += "\nobratnost..........";
+        playerDataStr += String(state.currentPlayerData.dexterity);
+        playerDataStr += "\nmagie...............";
+        playerDataStr += String(state.currentPlayerData.magic);
+        playerDataStr += "\nvolne zkusenosti..";
+        playerDataStr += String(state.currentPlayerData.bonus_points);
+        playerDataStr += "\npocet schopnosti..";
+        playerDataStr += String(state.currentPlayerData.skills_count);
     } else {
         playerDataStr += "Neni vlozen tag!";
     }

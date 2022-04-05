@@ -14,7 +14,8 @@ private:
         switch (portalRole) {
             case Default:
                 return "default";
-                break;
+            case Skills:
+                return "skills";
         }
     }
 

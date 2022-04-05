@@ -56,7 +56,7 @@ private:
     }
 
     void onInfoMessage(const String *text) {
-        for (auto &callback: errorCallbacks) callback(text);
+        for (auto &callback: infoCallbacks) callback(text);
     }
 
     void stage1();
@@ -64,6 +64,8 @@ private:
     bool stage2(const PriceListEntry *entry);
 
     bool stage3(const PriceListEntry *entry);
+
+    bool stage4(const PriceListEntry *entry);
 
     void resetFlags() {
         flagTagDisconnected = false;

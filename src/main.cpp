@@ -36,7 +36,7 @@ void setup() {
 
     ledRing.begin();
 
-    if (!priceList.load(Default, &framework.storage)) {
+    if (!priceList.load(Skills, &framework.storage)) {
         Debug.println("Could not load price list!");
         return;
     }

@@ -87,6 +87,9 @@ void StateManager::reportState() {
         case PortalStage::Stage3:
             stageStr = "Stage3";
             break;
+        case PortalStage::Stage4:
+            stageStr = "Stage4";
+            break;
     }
 
     String playerDataStr = "";

@@ -11,17 +11,26 @@ bool PriceList::load(PortalRole portalRole, Storage *storage) {
     this->prices.clear();
 
     for (auto row: list) {
-        const PriceListEntry entry = PriceListEntry{.code =  row["code"], .name =  row["name"], .price =  row["price"], .delta =  row["delta"]};
-        Debug.printf(
-                "Loaded entry: name=%s code=%s price=%d delta=%d\n", entry.name.c_str(), entry.code.c_str(), entry.price, entry.delta
-        );
+        const PriceListEntry entry = PriceListEntry{
+                .code =  row["code"],
+                .name =  row["name"],
+                .strength =  row["strength"],
+                .magic = row["magic"],
+                .dexterity = row["dexterity"],
+                .skill =  row["skill"],
+                .bonus_points = row["bonus_points"]
+        };
+
+        Debug.printf("Loaded entry: name=%s code=%s strength=%d magic=%d dexterity=%d experiences=%d\n",
+                     entry.name.c_str(), entry.code.c_str(), entry.strength, entry.magic, entry.dexterity, entry.bonus_points);
+
         this->prices.insert(std::make_pair(entry.code, entry));
     }
 
     return true;
 }
 
-PriceListEntry *PriceList::getByCode(const String& code) {
+PriceListEntry *PriceList::getByCode(const String &code) {
     auto it = this->prices.find(code);
     if (it == prices.end()) return nullptr;
 
