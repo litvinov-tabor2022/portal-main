@@ -94,7 +94,8 @@ void Display::draw(const AppState state, const std::optional<ModalMessage> modal
         playerDataStr += "Neni vlozen tag!";
     }
 
-    const String itemSelected = state.stage == PortalStage::Stage2 ? "Vybrano: " + state.itemToConfirm : "";
+    const String itemSelected =
+            state.stage == PortalStage::Stage2 ? "Vybrano:\n --------- \n" + selectedItemToString(state.itemToConfirm) : "";
 
     // -----------
 
@@ -107,7 +108,30 @@ void Display::draw(const AppState state, const std::optional<ModalMessage> modal
     tft.setCursor(0, 0, 2);
     tft.setTextColor(fgColor);
     tft.setTextSize(1);
-    tft.println(playerDataStr);
-    tft.println();
-    tft.println(itemSelected);
+    tft.setTextWrap(true, true);
+
+    if (state.stage == PortalStage::Stage2) {
+        tft.println(itemSelected);
+        tft.println();
+        tft.println(helpSelected);
+    } else {
+        tft.println(playerDataStr);
+    }
+}
+
+String Display::selectedItemToString(const PriceListEntry &item) {
+    String res = "";
+
+    switch (item.operation) {
+        case ADD:
+            res += "Pridej:\n";
+            break;
+        case REMOVE:
+            res += "Odeber:\n";
+        default:
+            break;
+    }
+
+    res += item.altName;
+    return res;
 }

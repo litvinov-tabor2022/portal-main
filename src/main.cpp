@@ -11,7 +11,6 @@
 #include "hw/Display.h"
 #include "hw/KeyboardModule.h"
 #include "StateManager.h"
-#include "PriceList.h"
 #include "Portal.h"
 
 StateManager stateManager;
@@ -19,9 +18,9 @@ KeyboardModule keyboardModule;
 PortalFramework framework;
 WebServer webServer(&framework);
 LedRing ledRing;
-PriceList priceList;
 Display display;
 Portal portal;
+Storage storage;
 
 void setup() {
     Serial.begin(115200);
@@ -29,19 +28,15 @@ void setup() {
     // wait for monitor open
     delay(500);
 
-    if (!framework.begin()) {
-        Debug.println("Could not initialize tag reader!");
+    std::optional<std::string> frameworkInitMessage = framework.begin();
+    if (!frameworkInitMessage->empty()) {
+        Debug.printf("Could not initialize framework! Err: %s\n", frameworkInitMessage.value().c_str());
         return;
     }
 
     ledRing.begin();
 
-    if (!priceList.load(Skills, &framework.storage)) {
-        Debug.println("Could not load price list!");
-        return;
-    }
-
-    portal.begin(&framework, &keyboardModule, &priceList, &ledRing);
+    portal.begin(&framework, &keyboardModule, &ledRing);
 
     stateManager.begin(&portal);
 

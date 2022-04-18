@@ -15,6 +15,8 @@ public:
 
     TFT_eSPI tft;
 private:
+    static String selectedItemToString(const PriceListEntry &item);
+
     bool waitingForRedraw = false;
 
     void draw(AppState state, std::optional<ModalMessage> modalMessage);

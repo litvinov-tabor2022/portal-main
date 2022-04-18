@@ -5,7 +5,7 @@
 #include "hw/LedRing.h"
 #include "hw/KeyboardModule.h"
 #include "defs.h"
-#include "PriceList.h"
+#include "Resources.h"
 
 enum PortalEvent {
     TagDisconnected, CodeEntered
@@ -13,11 +13,11 @@ enum PortalEvent {
 
 class Portal {
 public:
-    void begin(PortalFramework *pFramework, KeyboardModule *keyboard, PriceList *priceList, LedRing *ledRing);
+    void begin(PortalFramework *pFramework, KeyboardModule *keyboard, LedRing *ledRing);
 
     void addStageChangeCallback(const std::function<void(PortalStage)> &callback) { stageChangeCallbacks.push_back(callback); }
 
-    void addItemSelectedCallback(const std::function<void(const String *)> &itemName) { itemSelectedCallbacks.push_back(itemName); }
+    void addItemSelectedCallback(const std::function<void(const PriceListEntry&)> &itemName) { itemSelectedCallbacks.push_back(itemName); }
 
     void addPlayerConnectCallback(const std::function<void(_portal_PlayerData)> &callback) {
         playerTagConnectedCallbacks.push_back(callback);
@@ -38,8 +38,8 @@ private:
         for (auto &callback: stageChangeCallbacks) callback(stage);
     }
 
-    void onItemSelected(const String *itemName) {
-        for (auto &callback: itemSelectedCallbacks) callback(itemName);
+    void onItemSelected(const PriceListEntry &item) {
+        for (auto &callback: itemSelectedCallbacks) callback(item);
     }
 
     void onPlayerTagConnected(const PlayerData playerData) {
@@ -82,7 +82,7 @@ private:
 
     String lastCodeEntered = "";
 
-    std::vector<std::function<void(const String *)>> itemSelectedCallbacks;
+    std::vector<std::function<void(const PriceListEntry &)>> itemSelectedCallbacks;
     std::vector<std::function<void(PortalStage)>> stageChangeCallbacks;
     std::vector<std::function<void(_portal_PlayerData playerData)>> playerTagConnectedCallbacks;
     std::vector<std::function<void()>> playerTagDisconnectedCallbacks;

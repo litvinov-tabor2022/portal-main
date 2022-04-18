@@ -11,8 +11,8 @@ void StateManager::begin(Portal *portal) {
         onStateChange();
     });
 
-    portal->addItemSelectedCallback([this](const String *itemName) mutable {
-        this->state.itemToConfirm = *itemName;
+    portal->addItemSelectedCallback([this](const PriceListEntry& item) mutable {
+        this->state.itemToConfirm = PriceListEntry(item);
         onStateChange();
     });
 

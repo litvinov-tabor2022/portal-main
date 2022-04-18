@@ -48,4 +48,6 @@
 #define PIN_BUTTON_INIT_TAG 0
 #define PIN_DISPLAY_RESET 33
 
+const String helpSelected = "(# - potvrdit)\n(* - zrusit zadani)";
+
 #endif //PORTAL_CONSTANTS_H

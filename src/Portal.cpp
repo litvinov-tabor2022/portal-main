@@ -1,10 +1,11 @@
 #include <set>
 #include "Portal.h"
 #include "utils.h"
+#include "PlayerDataUtils.h"
 
-void Portal::begin(PortalFramework *pFramework, KeyboardModule *keyboard, PriceList *priceList, LedRing *ledRing) {
+void Portal::begin(PortalFramework *pFramework, KeyboardModule *keyboard, LedRing *ledRing) {
     this->framework = pFramework;
-    this->priceList = priceList;
+    this->priceList = framework->resources.loadPriceList();
     this->ledRing = ledRing;
 
     this->framework->addOnConnectCallback([this](PlayerData playerData) {
@@ -103,15 +104,16 @@ void Portal::stage1() {
                     break; // break switch -> repeat
                 }
 
-                const PriceListEntry *entry = priceList->getByCode(code);
-                if (entry != nullptr) { // found!
+                const std::optional<PriceListEntry> entry = priceList->getItemForCode(code);
+                if (entry.has_value()) { // found!
                     Debug.printf(
-                            "Pricelist item found: name=%s strength=%d magic=%d dexterity=%d skill=%d bonus_points=%d\n",
-                            entry->name.c_str(), entry->strength, entry->magic, entry->dexterity, entry->skill,
-                            entry->bonus_points);
-                    onItemSelected(&entry->name);
+                            "Pricelist item found: altName=%s strength=%d magic=%d dexterity=%d skill=%d\n",
+                            entry->altName.c_str(), entry->constraints.strength, entry->constraints.magic,
+                            entry->constraints.dexterity, entry->skill);
 
-                    if (stage2(entry)) {
+                    onItemSelected(entry.value());
+
+                    if (stage2(&entry.value())) {
                         return; // everything done!
                     }
                     Debug.println("Order was NOT confirmed; repeat input");
@@ -134,27 +136,23 @@ void Portal::stage1() {
 bool Portal::stage2(const PriceListEntry *entry) {
     onStageChange(PortalStage::Stage3);
 
-    bool violateRestrictions = false;
-    String s = "";
-
-    if (entry->magic > currentPlayerData.magic) {
-        s += "\nmagie: " + (String) currentPlayerData.magic + "/" + entry->magic;
-        violateRestrictions = true;
-    }
-    if (entry->dexterity > currentPlayerData.dexterity) {
-        s += "\nobratnost: " + (String) currentPlayerData.dexterity + "/" + entry->dexterity;
-        violateRestrictions = true;
-    }
-    if (entry->strength > currentPlayerData.strength) {
-        s += "\nsila: " + (String) currentPlayerData.strength + "/" + (String) entry->strength;
-        violateRestrictions = true;
-    }
-    if (violateRestrictions) {
-        String message = "Nedostatecna\n---------------\n";
+    if (!PlayerDataUtils::canHaveSkill(*entry, currentPlayerData)) {
+        String s = "";
+        if (entry->constraints.magic > currentPlayerData.magic) {
+            s += "\nmagie: " + (String) currentPlayerData.magic + "/" + entry->constraints.magic;
+        }
+        if (entry->constraints.dexterity > currentPlayerData.dexterity) {
+            s += "\nobratnost: " + (String) currentPlayerData.dexterity + "/" + entry->constraints.dexterity;
+        }
+        if (entry->constraints.strength > currentPlayerData.strength) {
+            s += "\nsila: " + (String) currentPlayerData.strength + "/" + (String) entry->constraints.strength;
+        }
+        String message = "Nedostatecna uroven\nvlastnosti pro schopnost\n---------------\n"+ entry->altName;
         message += s;
         onInfoMessage(&message);
         return false;
     }
+
     stage3(entry);
     return true;
 }
@@ -190,14 +188,15 @@ bool Portal::stage3(const PriceListEntry *entry) {
 bool Portal::stage4(const PriceListEntry *entry) {
     onStageChange(PortalStage::Stage4);
 
-    Debug.printf("Charging item: name=%s strength=%d magic=%d dexterity=%d skill=%d bonus_points=%d\n",
-                 entry->name.c_str(), entry->strength, entry->magic, entry->dexterity, entry->skill,
-                 entry->bonus_points);
+    Debug.printf("Charging item: name=%s strength=%d magic=%d dexterity=%d skill=%d\n",
+                 entry->altName.c_str(), entry->constraints.strength, entry->constraints.magic,
+                 entry->constraints.dexterity, entry->skill);
 
     const Transaction t = Transaction{
             .time = framework->clocks.getCurrentTime(),
             .user_id= static_cast<u8>(currentPlayerData.user_id),
-            .skill = entry->skill
+            .skill = entry->skill,
+            .operation = entry->operation
     };
 
     if (!framework->storage.appendTransaction(t)) {
@@ -205,39 +204,19 @@ bool Portal::stage4(const PriceListEntry *entry) {
         return false;
     }
 
-    std::set<portal_Skill> skills;
-
-    for (int i = 0; i < currentPlayerData.skills_count; i++) {
-        Serial.printf("Reading skill: %d\n", currentPlayerData.skills[i]);
-        skills.insert(currentPlayerData.skills[i]);
+    switch (entry->operation) {
+        case ADD:
+            Debug.printf("Inserting skill: %d\n", entry->skill);
+            PlayerDataUtils::addSkill(entry->skill, &currentPlayerData);
+            break;
+        case REMOVE: {
+            Debug.printf("Deleting skill: %d\n", currentPlayerData.skills_count);
+            PlayerDataUtils::removeSkill(entry->skill, &currentPlayerData);
+            break;
+        }
+        case UNKNOWN:
+            break;
     }
-
-    if (entry->skill > 0) {
-        Serial.printf("Inserting skill: %d\n", entry->skill);
-        skills.insert(static_cast<_portal_Skill>(entry->skill));
-    } else if (entry->skill < 0) {
-        Serial.printf("Deleting skill: %d\n", entry->skill);
-        skills.erase(static_cast<_portal_Skill>(-entry->skill));
-    }
-
-    skills.erase(portal_Skill_Skill_Default);
-
-    for (int i = 0; i < currentPlayerData.skills_count; i++) {
-        currentPlayerData.skills[i] = portal_Skill_Skill_Default;
-    }
-
-    int i = 0;
-    for (auto skill: skills) {
-        Serial.printf("Writing skill %d to position %d\n", skill, i);
-        currentPlayerData.skills[i] = skill;
-        i++;
-    }
-
-    currentPlayerData.skills_count = i;
-//    currentPlayerData.strength += entry->strength;
-//    currentPlayerData.strength += entry->magic;
-//    currentPlayerData.strength += entry->dexterity;
-
 
     if (!this->framework->writePlayerData(currentPlayerData)) {
         Debug.println("Could not charge selected item!");

@@ -20,27 +20,13 @@ struct AppState {
     PortalMode mode;
     bool tagPresent;
     PortalStage stage;
-    String itemToConfirm;
+    PriceListEntry itemToConfirm;
     PlayerData currentPlayerData; // this is valid only when tagPresent == true!
 };
 
 struct ModalMessage {
     String text;
     ModalMessageType modalMessageType;
-};
-
-enum PortalRole {
-    Default, Skills
-};
-
-struct PriceListEntry {
-    String code;
-    String name;
-    i16 strength;
-    i16 magic;
-    i16 dexterity;
-    i16 skill;
-    i16 bonus_points;
 };
 
 #endif //PORTAL_TYPES_H
