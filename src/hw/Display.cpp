@@ -70,7 +70,7 @@ void Display::draw(const AppState state, const std::optional<ModalMessage> modal
         tft.setTextSize(fontSize);
         tft.println(mm.text);
 
-        displayingModalUntil = millis() + (mm.modalMessageType == Info ? DISPLAY_INFO_TIMEOUT : DISPLAY_ERROR_TIMEOUT);
+        displayingModalUntil = millis() + mm.duration;
 
         return;
     }

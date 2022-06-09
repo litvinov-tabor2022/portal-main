@@ -110,7 +110,7 @@ void Portal::stage1() {
                 const String code = lastCodeEntered;
                 if (code == "" || code == KEYBOARD_CLEAN) {
                     String message = "Zadavani zruseno";
-                    onInfoMessage(&message);
+                    onInfoMessage(&message, DISPLAY_SHORT_MODAL_TIMEOUT);
                     break; // break switch -> repeat
                 }
 
@@ -132,7 +132,7 @@ void Portal::stage1() {
                 } else {
                     Debug.printf("PriceList entry for '%s' not found; repeat input\n", code.c_str());
                     String message = "Polozka s kodem \n    " + code + "\nnenalezena";
-                    onInfoMessage(&message);
+                    onInfoMessage(&message, DISPLAY_SHORT_MODAL_TIMEOUT);
                     break; // break switch -> repeat
                 }
         }
@@ -159,7 +159,13 @@ bool Portal::stage2(const PriceListEntry *entry) {
         }
         String message = "Nedostatecna uroven\nvlastnosti pro schopnost\n---------------\n" + entry->altName;
         message += s;
-        onInfoMessage(&message);
+        onInfoMessage(&message, DISPLAY_LONG_MODAL_TIMEOUT);
+        return false;
+    }
+
+    if (PlayerDataUtils::hasSkill(*entry, currentPlayerData) && entry->operation == ADD) {
+        String message = "Hrac ma jiz vlasnost\n---------------\n" + entry->altName;
+        onInfoMessage(&message, DISPLAY_LONG_MODAL_TIMEOUT);
         return false;
     }
 

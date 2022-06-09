@@ -40,10 +40,11 @@ void StateManager::begin(Portal *portal, PortalFramework *framework, KeyboardMod
         onStateChange();
     });
 
-    portal->addInfoCallback([this](const String *message) mutable {
+    portal->addInfoCallback([this](const String *message, int duration) mutable {
         const ModalMessage mm = ModalMessage{
                 .text = *message,
-                .modalMessageType = ModalMessageType::Info
+                .modalMessageType = ModalMessageType::Info,
+                .duration = duration
         };
 
         this->modalMessage = mm;

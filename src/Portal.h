@@ -27,7 +27,7 @@ public:
 
     void addErrorCallback(const std::function<void(const String *)> &callback) { errorCallbacks.push_back(callback); }
 
-    void addInfoCallback(const std::function<void(const String *)> &callback) { infoCallbacks.push_back(callback); }
+    void addInfoCallback(const std::function<void(const String *, int duration)> &callback) { infoCallbacks.push_back(callback); }
 
 private:
     void handleConnectedTag(PlayerData playerData);
@@ -55,8 +55,8 @@ private:
         for (auto &callback: errorCallbacks) callback(text);
     }
 
-    void onInfoMessage(const String *text) {
-        for (auto &callback: infoCallbacks) callback(text);
+    void onInfoMessage(const String *text, int duration = DISPLAY_INFO_TIMEOUT) {
+        for (auto &callback: infoCallbacks) callback(text, duration);
     }
 
     void stage1();
@@ -90,7 +90,7 @@ private:
     std::vector<std::function<void(_portal_PlayerData playerData)>> playerTagConnectedCallbacks;
     std::vector<std::function<void()>> playerTagDisconnectedCallbacks;
     std::vector<std::function<void(const String *)>> errorCallbacks;
-    std::vector<std::function<void(const String *)>> infoCallbacks;
+    std::vector<std::function<void(const String *, int duration)>> infoCallbacks;
 };
 
 

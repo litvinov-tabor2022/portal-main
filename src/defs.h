@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <PortalFramework.h>
+#include "Constants.h"
 
 enum PortalStage {
     Stage0, Stage1, Stage2, Stage3, Stage4
@@ -27,6 +28,7 @@ struct AppState {
 struct ModalMessage {
     String text;
     ModalMessageType modalMessageType;
+    int duration = DISPLAY_SHORT_MODAL_TIMEOUT;
 };
 
 #endif //PORTAL_TYPES_H
