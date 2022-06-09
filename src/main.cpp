@@ -1,11 +1,8 @@
 #include <Arduino.h>
 
-#include "UpdateOTA.h"
-
 #include "Tasker.h"
 #include "defs.h"
 
-#include "networking/WebServer.h"
 #include "PortalFramework.h"
 #include "hw/LedRing.h"
 #include "hw/Display.h"
@@ -16,15 +13,12 @@
 StateManager stateManager;
 KeyboardModule keyboardModule;
 PortalFramework framework;
-WebServer webServer(&framework);
 LedRing ledRing;
 Display display;
 Portal portal;
-Storage storage;
 
 void setup() {
     Serial.begin(115200);
-
     // wait for monitor open
     delay(500);
 
@@ -38,7 +32,7 @@ void setup() {
 
     portal.begin(&framework, &keyboardModule, &ledRing);
 
-    stateManager.begin(&portal);
+    stateManager.begin(&portal, &framework, &keyboardModule);
 
     if (!display.begin(&stateManager)) {
         Debug.println("Could not initialize display!");
@@ -50,35 +44,17 @@ void setup() {
         return;
     }
 
-    Core0.once("AP start", [] {
-        // TODO load this from EEPROM
-        String ssid = "portal-123";
-        String password = "12345678";
-        Debug.println("Starting AP...");
-        AccessPoint::start(ssid.c_str(), password.c_str());
-        Debug.println("Starting OTA...");
-        ArduinoOTA.begin();
-        TelnetPrint.begin();
-        // TODO keep this for testing
-        Debug.println(F("Starting HTTP server..."));
-        webServer.start();
-    });
-
-    setupOTA();
-
-    Core0.loop("OTA", [] {
-        ArduinoOTA.handle();
-    });
-
     stateManager.addCallback([](const AppState state) {
         // TODO in prod, it will switch HTTP server here
 
         switch (state.mode) {
             case PortalMode::User:
-                keyboardModule.setReadingEnabled(state.tagPresent);
+//                keyboardModule.setReadingEnabled(state.tagPresent);
+                keyboardModule.setReadingEnabled(true);
                 break;
             case PortalMode::Service:
-                keyboardModule.setReadingEnabled(false);
+                ledRing.makeSpiral(LEDRING_COLOR_ORANGE);
+                keyboardModule.setReadingEnabled(true);
                 break;
             case PortalMode::Starting:
                 // no-op

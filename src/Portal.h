@@ -72,9 +72,12 @@ private:
         flagCodeEntered = false;
     }
 
+    bool recoverTag();
+
     PortalFramework *framework;
     PriceList *priceList;
     LedRing *ledRing;
+    KeyboardModule *keyboardModule;
 
     bool flagCodeEntered = false;
     bool flagTagDisconnected = false;

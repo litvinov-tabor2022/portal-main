@@ -12,20 +12,12 @@
 #include "HwLocks.h"
 #include "types.h"
 
-#define HTTP_PORT 80
 #define DNS_PORT 53
-
-#define COMMITLOG_DIR "/data"
-#define COMMITLOG_FILE "/data/transactions.log"
-
-#define PRICELIST_FILE "/pricelist/prices.json"
-
-#define CONTENT_TYPE_JSONL "application/jsonl"
-
 
 #define LEDRING_COLOR_RED Adafruit_NeoPixel::Color(150, 0, 0)
 #define LEDRING_COLOR_GREEN Adafruit_NeoPixel::Color(0, 150, 0)
 #define LEDRING_COLOR_BLUE Adafruit_NeoPixel::Color(0, 0, 150)
+#define LEDRING_COLOR_ORANGE Adafruit_NeoPixel::Color(255,165,0)
 
 #define LEDRING_BRIGHTNESS 5
 #define LEDRING_BITS 16
@@ -49,5 +41,8 @@
 #define PIN_DISPLAY_RESET 33
 
 const String helpSelected = "(# - potvrdit)\n(* - zrusit zadani)";
+
+const String RECOVERY_CODE = "C9";
+const String SYNC_CODE = "C2580";
 
 #endif //PORTAL_CONSTANTS_H

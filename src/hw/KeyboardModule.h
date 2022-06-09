@@ -19,10 +19,10 @@ public:
 
     void setReadingEnabled(bool enabled) { this->readingEnabled = enabled; }
 
+    void clean();
+
 private:
     char keyboardRead();
-
-    void clean();
 
     void append(char c);
 

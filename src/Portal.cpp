@@ -7,8 +7,9 @@ void Portal::begin(PortalFramework *pFramework, KeyboardModule *keyboard, LedRin
     this->framework = pFramework;
     this->priceList = framework->resources.loadPriceList();
     this->ledRing = ledRing;
+    this->keyboardModule = keyboard;
 
-    this->framework->addOnConnectCallback([this](PlayerData playerData) {
+    this->framework->addOnConnectCallback([this](PlayerData playerData, bool isReload) {
         handleConnectedTag(playerData);
     });
 
@@ -17,13 +18,21 @@ void Portal::begin(PortalFramework *pFramework, KeyboardModule *keyboard, LedRin
         onPlayerTagDisconnected();
     });
 
-    keyboard->addCallback([this](String code) {
+    keyboardModule->addCallback([this](String code) {
         lastCodeEntered = std::move(code);
         flagCodeEntered = true;
     });
 
     Core0.loopEvery("InitializeTag", 20, [this] {
-        if (!this->framework->isTagConnected()) return;
+        if (lastCodeEntered == RECOVERY_CODE && this->framework->isTagConnected()) {
+            Serial.println("Recovering to last inserted tag");
+            if (recoverTag()) {
+                this->ledRing->blink(LEDRING_COLOR_GREEN);
+            } else {
+                this->ledRing->blink(LEDRING_COLOR_RED);
+            }
+            lastCodeEntered = "";
+        }
 
         if (digitalRead(PIN_BUTTON_INIT_TAG) == LOW) {
             if (this->framework->initializeTag()) {
@@ -39,6 +48,7 @@ void Portal::begin(PortalFramework *pFramework, KeyboardModule *keyboard, LedRin
 
 void Portal::handleConnectedTag(PlayerData playerData) {
     if (framework->isTagConnected()) {
+        keyboardModule->clean();
         String strSkills = "";
         for (auto skill: playerData.skills) {
             strSkills += static_cast<int>(skill);
@@ -136,7 +146,7 @@ void Portal::stage1() {
 bool Portal::stage2(const PriceListEntry *entry) {
     onStageChange(PortalStage::Stage3);
 
-    if (!PlayerDataUtils::canHaveSkill(*entry, currentPlayerData)) {
+    if (!PlayerDataUtils::canHaveSkill(*entry, currentPlayerData) && entry->operation == ADD) {
         String s = "";
         if (entry->constraints.magic > currentPlayerData.magic) {
             s += "\nmagie: " + (String) currentPlayerData.magic + "/" + entry->constraints.magic;
@@ -147,7 +157,7 @@ bool Portal::stage2(const PriceListEntry *entry) {
         if (entry->constraints.strength > currentPlayerData.strength) {
             s += "\nsila: " + (String) currentPlayerData.strength + "/" + (String) entry->constraints.strength;
         }
-        String message = "Nedostatecna uroven\nvlastnosti pro schopnost\n---------------\n"+ entry->altName;
+        String message = "Nedostatecna uroven\nvlastnosti pro schopnost\n---------------\n" + entry->altName;
         message += s;
         onInfoMessage(&message);
         return false;
@@ -194,9 +204,9 @@ bool Portal::stage4(const PriceListEntry *entry) {
 
     const Transaction t = Transaction{
             .time = framework->clocks.getCurrentTime(),
+            .device_id = framework->getDeviceConfig().deviceId,
             .user_id= static_cast<u8>(currentPlayerData.user_id),
-            .skill = entry->skill,
-            .operation = entry->operation
+            .skill = static_cast<i16>(static_cast<i16>(entry->skill) * (entry->operation == ADD ? 1 : -1))
     };
 
     if (!framework->storage.appendTransaction(t)) {
@@ -214,8 +224,6 @@ bool Portal::stage4(const PriceListEntry *entry) {
             PlayerDataUtils::removeSkill(entry->skill, &currentPlayerData);
             break;
         }
-        case UNKNOWN:
-            break;
     }
 
     if (!this->framework->writePlayerData(currentPlayerData)) {
@@ -231,4 +239,8 @@ bool Portal::stage4(const PriceListEntry *entry) {
     });
 
     return true;
+}
+
+bool Portal::recoverTag() {
+    return this->framework->writePlayerData(currentPlayerData);
 }

@@ -3,8 +3,21 @@
 #include "Tasker.h"
 #include "Constants.h"
 
-void StateManager::begin(Portal *portal) {
+void StateManager::begin(Portal *portal, PortalFramework *framework, KeyboardModule *keyboard) {
     pinMode(PIN_MODE, INPUT_PULLUP);
+
+    this->state.mode = User;
+    keyboard->addCallback([this, framework] (const String& code) mutable  {
+        if(code == SYNC_CODE){
+            Serial.println("Entering sync mode");
+            framework->synchronizationMode.toggle();
+            const PortalMode oldMode = this->state.mode;
+            const PortalMode newMode = oldMode == User ? Service : User;
+
+            this->state.mode = newMode;
+            onStateChange();
+        }
+    });
 
     portal->addStageChangeCallback([this](PortalStage stage) mutable {
         this->state.stage = stage;
@@ -46,16 +59,6 @@ void StateManager::begin(Portal *portal) {
 
         this->modalMessage = mm;
         onStateChange();
-    });
-
-    Core1.loopEvery("ModeSwitchCheck", 100, [this]() mutable {
-        const PortalMode oldMode = this->state.mode;
-        const PortalMode newMode = digitalRead(PIN_MODE) == LOW ? Service : User;
-
-        if (oldMode != newMode) {
-            this->state.mode = newMode;
-            onStateChange();
-        }
     });
 
     Core1.loopEvery("RegularReport", 5000, [this] {

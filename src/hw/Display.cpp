@@ -29,7 +29,7 @@ bool Display::begin(StateManager *stateManager) {
         Debug.println("Display initialized");
     }
 
-    this->stateManager->addCallback([this](const AppState state) {
+    this->stateManager->addCallback([this](const AppState& state) {
         waitingForRedraw = true;
     });
 
@@ -92,6 +92,8 @@ void Display::draw(const AppState state, const std::optional<ModalMessage> modal
         playerDataStr += String(state.currentPlayerData.skills_count);
     } else {
         playerDataStr += "Neni vlozen tag!";
+        if(state.mode == PortalMode::Service)
+            playerDataStr += "\nSERVISNI MOD";
     }
 
     const String itemSelected =

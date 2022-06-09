@@ -10,7 +10,7 @@
 
 class StateManager {
 public:
-    void begin(Portal *portal);
+    void begin(Portal *portal, PortalFramework *framework, KeyboardModule *keyboard);
 
     AppState getState() { return state; }
 
