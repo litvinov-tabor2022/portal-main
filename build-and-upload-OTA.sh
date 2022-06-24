@@ -1,6 +1,10 @@
 #!/bin/bash
 
+set -e
+
 function start_telnet() {
+  echo "Telnet to: $1"
+
   n=0
    until [ $n -ge 5 ]
    do
@@ -10,4 +14,6 @@ function start_telnet() {
    done
 }
 
-pio run --target upload -e ota && start_telnet
+pio run --target upload -e ota
+
+#start_telnet $IP
