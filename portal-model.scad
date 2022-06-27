@@ -38,6 +38,8 @@ outter_dia = 105;
 inner_dia = outter_dia - 2 * fatness;
 outter_height = 45;
 
+switch_pos = [41, 5, - .01];
+
 // ---------------------------------------------
 
 module sector(radius, angles, fn = 24) {
@@ -112,6 +114,11 @@ module MainPart() {
             cylinder(d = outter_dia, h = outter_height, $fn = 100);
             translate([0, 0, fatness]) cylinder(d = inner_dia, h = outter_height, $fn = 100);
 
+            // switch hole
+            translate(switch_pos) {
+                cylinder(d = switch_head_dia() + 2, h = 100, $fn = round_prec);
+            }
+
             // DEBUG:
             // translate([0, 0, fatness]) cylinder(d = outter_dia + .01, h = outter_height + .01, $fn = 100);
         }
@@ -180,7 +187,7 @@ module Cover() {
             translate([- 50, - 52, - .01]) cube([100, 10, 7.4]);
 
             // debug:
-            // translate([0, 0, fatness]) cylinder(d = outter_dia + .01, h = outter_height + .01, $fn = 100); // whole barrel
+            translate([0, 0, - .01]) cylinder(d = outter_dia + .01, h = outter_height + .01, $fn = 100); // whole barrel
             // translate([0, 0, 6.98]) cylinder(d = outter_dia + .01, h = outter_height + .01, $fn = 100); // just top to NFC
             // translate([0, 0, 5]) color("green") cylinder(d = outter_dia + .01, h = outter_height + .01, $fn = 100); // just top
             // translate([-100,-60 - .01]) cube([200, 30, 100]);  // front wall
@@ -208,7 +215,7 @@ module Cover() {
             if (DEBUG) translate([1 + inset, 1 + inset + MFRC_board_size().y, 5]) rotate([180]) MFRC_board();
         }
 
-        if (DEBUG) translate([0, 0, total_height - ring_height + .01]) LedRing();
+        //        if (DEBUG) translate([0, 0, total_height - ring_height + .01]) LedRing();
     }
 }
 
@@ -248,6 +255,21 @@ module CompleteMainModule() {
             // side-holders for display part
             translate([- 35.1, - 45.79]) {
                 for (i = [0, 1]) translate([i * 68.05, 0]) cube([2.15, 1.8, 20]);
+            }
+
+            // switch
+            translate(switch_pos) {
+                height = 7;
+
+                difference() {
+                    cylinder(d = switch_head_dia() + 5, h = height, $fn = round_prec);
+                    translate([0, 0, - .01]) {
+                        cylinder(d = switch_head_dia() + 2, h = height - fatness, $fn = round_prec);
+                        cylinder(d = switch_hole_dia(), h = 100, $fn = round_prec);
+                    }
+                }
+
+                if (DEBUG) translate([0, 0, height + 16.35]) rotate([180]) Switch(fatness);
             }
 
 
