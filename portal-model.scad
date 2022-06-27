@@ -4,8 +4,8 @@ use <../modely/flexbatter.scad>
 use <../modely/buttons.scad>
 use <../modely/mfrc.scad>
 
-DEBUG = true;
-//DEBUG = false;
+//DEBUG = true;
+DEBUG = false;
 
 
 fatness = 1.4;
@@ -104,7 +104,7 @@ module Keyboard() {
 module BatteryHolder() {
     difference() {
         cube(batt_holder_size);
-        translate([1.5, 1.5]) cube([66, battery_dia, 100]);
+        translate([1.5, 1.5, 1.5]) cube([66, battery_dia, 100]);
     }
     if (DEBUG) translate([1.5, battery_dia / 2 + 1.5, battery_dia / 2 + 1.5]) color("grey") rotate([0, 90])
         cylinder(d = battery_dia, h = battery_length, $fn = 25);
@@ -133,16 +133,17 @@ module HandlePart() {
     dia = 90;
     width = 10;
 
-    angle = 50;
+    angle = 30;
 
     difference() {
         linear_extrude(outter_height) sector(dia, [90 - angle, 90 + angle], 200);
-        translate([0, 0, fatness]) linear_extrude(100) sector(dia - width, [0, 360], 200);
+        // TODO
+        translate([0, 0, - .01]) linear_extrude(100) sector(dia - width, [0, 360], 200);
     }
 }
 
 module DisplayPart() {
-    size = [69.7, 6, outter_height - 1.6];
+    size = [69.7, 6, outter_height - 1.65];
     union() {
         difference() {
             color("darkred") cube(size);
@@ -166,7 +167,8 @@ module DisplayPart() {
 
             // rails for side-holders
             for (i = [0, 1]) {
-                translate([- .01 + i * (size.x - 2 + .02), 2.2, - 5]) color("red") cube([2, 2, 25]);
+                // this is intentionally not through - because of print
+                translate([- .01 + i * (size.x - 2 + .02), 2.2, .6]) color("red") cube([2, 2, 25]);
             }
         }
 
@@ -253,7 +255,7 @@ module CompleteMainModule() {
 
             // battery holder holder :-)
             translate([- (batt_holder_size.x + 2 * (1 + inset)) / 2, 14]) difference() {
-                cube([batt_holder_size.x + 2 * (1 + inset), batt_holder_size.y + 2 * (1 + inset), 15]);
+                cube([batt_holder_size.x + 2 * (1 + inset), batt_holder_size.y + 2 * (1 + inset), 20 + .01]);
                 translate([1, 1]) cube([batt_holder_size.x + 2 * (inset), batt_holder_size.y + 2 * (inset), 100]);
                 translate([(batt_holder_size.x - pcb_size.x) / 2, - .01]) {
                     cube([pcb_size.x + 2 * (1 + inset), 100, 100]);
@@ -283,7 +285,7 @@ module CompleteMainModule() {
             // charger
             translate(charger_pos) {
                 translate([- 1, - 5 - 2 * inset, - .01]) difference() {
-                    cube([3, Charger_size().x + 2 * (1 + inset), 15]);
+                    cube([3, Charger_size().x + 2 * (1 + inset), 20]);
                     translate([0, 1 + inset]) cube([100, Charger_size().x + 2 * inset, 100]);
                 }
 
@@ -299,14 +301,14 @@ module CompleteMainModule() {
 CompleteMainModule();
 
 translate([69, 124]) translate([- batt_holder_size.x / 2, 15.2, 7]) // for modelling
-    //translate([150, 80]) rotate([0, 0, 90]) // for print
+    // translate([150, 80]) // for print
     BatteryHolder();
 
 translate([69, 124, outter_height - 10]) // for modelling
-    //    translate([outter_dia / 2, - 80]) rotate([0, 180]) // for print
+    // translate([120, - 80]) rotate([0, 180]) // for print
     Cover();
 
-translate([34.15, 75.9, fatness + .01]) // for modelling
-    //    translate([0, - 15]) // for modelling, standing next
-    //translate([0, -5]) rotate([90]) // for print
+translate([34.15, 75.9, fatness + .1]) // for modelling
+    // translate([0, - 15]) // for modelling, standing next
+    // translate([0, -5]) rotate([90]) // for print
     DisplayPart();
