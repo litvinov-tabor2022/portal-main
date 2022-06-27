@@ -39,6 +39,8 @@ inner_dia = outter_dia - 2 * fatness;
 outter_height = 45;
 
 switch_pos = [41, 5, - .01];
+charger_pos = [36.15, 19.4, - .01];
+charger_hole = [4.3, 10.2, 100];
 
 // ---------------------------------------------
 
@@ -115,9 +117,11 @@ module MainPart() {
             translate([0, 0, fatness]) cylinder(d = inner_dia, h = outter_height, $fn = 100);
 
             // switch hole
-            translate(switch_pos) {
-                cylinder(d = switch_head_dia() + 2, h = 100, $fn = round_prec);
-            }
+            translate(switch_pos) cylinder(d = switch_head_dia() + 2, h = 100, $fn = round_prec);
+
+            // charger hole
+            translate(charger_pos) cube(charger_hole);
+
 
             // DEBUG:
             // translate([0, 0, fatness]) cylinder(d = outter_dia + .01, h = outter_height + .01, $fn = 100);
@@ -187,7 +191,7 @@ module Cover() {
             translate([- 50, - 52, - .01]) cube([100, 10, 7.4]);
 
             // debug:
-            translate([0, 0, - .01]) cylinder(d = outter_dia + .01, h = outter_height + .01, $fn = 100); // whole barrel
+            // translate([0, 0, - .01]) cylinder(d = outter_dia + .01, h = outter_height + .01, $fn = 100); // whole barrel
             // translate([0, 0, 6.98]) cylinder(d = outter_dia + .01, h = outter_height + .01, $fn = 100); // just top to NFC
             // translate([0, 0, 5]) color("green") cylinder(d = outter_dia + .01, h = outter_height + .01, $fn = 100); // just top
             // translate([-100,-60 - .01]) cube([200, 30, 100]);  // front wall
@@ -201,7 +205,11 @@ module Cover() {
 
                 translate([0, 0, 2]) cylinder(d = ring_inner_dia - 2.5, h = 100, $fn = 50);
             }
+
+            // hole for LED ring cables
+            translate([- 4.5, - 32.4, - .01]) cube([9, 4, 100 + fatness + .02]);
         }
+
 
         // NFC holder
         translate([- MFRC_board_size().x / 2 - 10, - MFRC_board_size().y / 2, 2.01]) {
@@ -215,7 +223,7 @@ module Cover() {
             if (DEBUG) translate([1 + inset, 1 + inset + MFRC_board_size().y, 5]) rotate([180]) MFRC_board();
         }
 
-        //        if (DEBUG) translate([0, 0, total_height - ring_height + .01]) LedRing();
+        if (DEBUG) translate([0, 0, total_height - ring_height + .01]) LedRing();
     }
 }
 
@@ -270,6 +278,16 @@ module CompleteMainModule() {
                 }
 
                 if (DEBUG) translate([0, 0, height + 16.35]) rotate([180]) Switch(fatness);
+            }
+
+            // charger
+            translate(charger_pos) {
+                translate([- 1, - 5 - 2 * inset, - .01]) difference() {
+                    cube([3, Charger_size().x + 2 * (1 + inset), 15]);
+                    translate([0, 1 + inset]) cube([100, Charger_size().x + 2 * inset, 100]);
+                }
+
+                if (DEBUG) translate([Charger_size().y - .4, 13.4, Charger_size().z + .4]) rotate([180, 0, - 90]) Charger();
             }
 
 
