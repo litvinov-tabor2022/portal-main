@@ -22,6 +22,10 @@ rtc_size = [27, 28, 9.56];
 keyboard_size = [69, 76, 1];
 keyboard_conn_size = [20.3, 14.9, 2.9];
 
+ring_outter_dia = 67.8;
+ring_inner_dia = 54.3;
+ring_height = 3;
+
 battery_length = 66;
 battery_dia = 19;
 batt_holder_size = [66 + 2 * 1.5, battery_dia + 2 * 1.5, battery_dia + 1.5];
@@ -78,6 +82,13 @@ module Display() {
     }
 }
 
+module LedRing() {
+    difference() {
+        color("blue") cylinder(d = ring_outter_dia, h = ring_height, $fn = 50);
+        translate([0, 0, - .01]) cylinder(d = ring_inner_dia, h = 100, $fn = 50);
+    }
+}
+
 module Keyboard() {
     color("black") cube(keyboard_size);
     color("grey") translate([(keyboard_size.x - keyboard_conn_size.x) / 2, keyboard_size.y]) cube(keyboard_conn_size);
@@ -118,12 +129,47 @@ module HandlePart() {
 }
 
 module Cover() {
-    union() {
-        cylinder(d = outter_dia, h = fatness, $fn = 100);
-        translate([0, 0, fatness]) cylinder(d = inner_dia - inset, h = 10, $fn = 100);
+    total_height = 10 + fatness;
 
-        // DEBUG:
-        // translate([0, 0, fatness]) cylinder(d = outter_dia + .01, h = outter_height + .01, $fn = 100);
+    union() {
+        difference() {
+            union() {
+                cylinder(d = inner_dia - 2 * inset, h = 10, $fn = 100);
+                color("red") translate([0, 0, 10]) cylinder(d = outter_dia, h = fatness, $fn = 100);
+            }
+
+            // inner of cover
+            translate([0, 0, - .01]) cylinder(d = inner_dia - 2, h = 7, $fn = 100);
+
+            // debug:
+//             translate([0, 0, fatness]) cylinder(d = outter_dia + .01, h = outter_height + .01, $fn = 100); // whole barrel
+            translate([0, 0, 6.98]) cylinder(d = outter_dia + .01, h = outter_height + .01, $fn = 100); // just top to NFC
+            // translate([-100,-60 - .01]) cube([200, 30, 100]);  // front wall
+
+            // rail for LED ring
+            translate([0, 0, total_height - ring_height]) {
+                difference() {
+                    cylinder(d = ring_outter_dia + .8, h = 100, $fn = 50);
+                    cylinder(d = ring_inner_dia - .8, h = 100, $fn = 50);
+                }
+
+                translate([0, 0, 2]) cylinder(d = ring_inner_dia - 2.5, h = 100, $fn = 50);
+            }
+        }
+
+        // NFC holder
+        translate([- MFRC_board_size().x / 2 - 10, - MFRC_board_size().y / 2, 2.01]) {
+            outter = [MFRC_board_size().x + 2 * (1 + inset), MFRC_board_size().y + 2 * (1 + inset), 5];
+
+            difference() {
+                cube(outter);
+                translate([1, 1, - .01]) cube([MFRC_board_size().x + 2 * inset, MFRC_board_size().y + 2 * inset, 100]);
+            }
+
+            if (DEBUG) translate([1 + inset, 1 + inset+ MFRC_board_size().y, 5]) rotate([180]) MFRC_board();
+        }
+
+        if (DEBUG) translate([0, 0, total_height - ring_height + .01]) LedRing();
     }
 }
 
@@ -169,6 +215,6 @@ translate([69, 124]) translate([- batt_holder_size.x / 2, 15.2, 7])
     //translate([150, 80]) rotate([0, 0, 90])
     BatteryHolder();
 
-translate([69, 124, outter_height]) rotate([0, 180])
-    //translate([outter_dia/2, - 80])
+translate([69, 124, outter_height - 10])
+    //    translate([outter_dia / 2, - 80]) rotate([0, 180])
     Cover();
