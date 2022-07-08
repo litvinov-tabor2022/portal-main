@@ -3,11 +3,16 @@
 #include "utils.h"
 #include "PlayerDataUtils.h"
 
-void Portal::begin(PortalFramework *pFramework, KeyboardModule *keyboard, LedRing *ledRing) {
+bool Portal::begin(PortalFramework *pFramework, KeyboardModule *keyboard, LedRing *ledRing) {
     this->framework = pFramework;
-    this->priceList = framework->resources.loadPriceList();
     this->ledRing = ledRing;
     this->keyboardModule = keyboard;
+    this->priceList = framework->resources.loadPriceList();
+
+    if (this->priceList == nullptr) {
+        Debug.println("Could not load pricelist");
+        return false;
+    }
 
     this->framework->addOnConnectCallback([this](PlayerData playerData, bool isReload) {
         handleConnectedTag(playerData);
@@ -44,6 +49,8 @@ void Portal::begin(PortalFramework *pFramework, KeyboardModule *keyboard, LedRin
     });
 
     Debug.println("Portal started!");
+
+    return true;
 }
 
 void Portal::handleConnectedTag(PlayerData playerData) {
@@ -110,7 +117,7 @@ void Portal::stage1() {
                 const String code = lastCodeEntered;
                 if (code == "" || code == KEYBOARD_CLEAN) {
                     String message = "Zadavani zruseno";
-                    onInfoMessage(&message, DISPLAY_SHORT_MODAL_TIMEOUT);
+                    onInfoMessage(&message, DISPLAY_INFO_TIMEOUT);
                     break; // break switch -> repeat
                 }
 
@@ -132,7 +139,7 @@ void Portal::stage1() {
                 } else {
                     Debug.printf("PriceList entry for '%s' not found; repeat input\n", code.c_str());
                     String message = "Polozka s kodem \n    " + code + "\nnenalezena";
-                    onInfoMessage(&message, DISPLAY_SHORT_MODAL_TIMEOUT);
+                    onInfoMessage(&message, DISPLAY_INFO_TIMEOUT);
                     break; // break switch -> repeat
                 }
         }
@@ -159,13 +166,13 @@ bool Portal::stage2(const PriceListEntry *entry) {
         }
         String message = "Nedostatecna uroven\nvlastnosti pro schopnost\n---------------\n" + entry->altName;
         message += s;
-        onInfoMessage(&message, DISPLAY_LONG_MODAL_TIMEOUT);
+        onInfoMessage(&message, DISPLAY_WARN_TIMEOUT);
         return false;
     }
 
     if (PlayerDataUtils::hasSkill(*entry, currentPlayerData) && entry->operation == ADD) {
         String message = "Hrac ma jiz vlasnost\n---------------\n" + entry->altName;
-        onInfoMessage(&message, DISPLAY_LONG_MODAL_TIMEOUT);
+        onInfoMessage(&message, DISPLAY_INFO_TIMEOUT);
         return false;
     }
 
@@ -209,7 +216,7 @@ bool Portal::stage4(const PriceListEntry *entry) {
                  entry->constraints.dexterity, entry->skill);
 
     const Transaction t = Transaction{
-            .time = framework->clocks.getCurrentTime(),
+            .time = framework->getCurrentTime(),
             .device_id = framework->getDeviceConfig().deviceId,
             .user_id= static_cast<u8>(currentPlayerData.user_id),
             .skill = static_cast<i16>(static_cast<i16>(entry->skill) * (entry->operation == ADD ? 1 : -1))

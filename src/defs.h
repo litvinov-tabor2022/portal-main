@@ -14,7 +14,7 @@ enum PortalMode {
 };
 
 enum ModalMessageType {
-    Info, Error
+    Info, Warn, Error
 };
 
 struct AppState {
@@ -28,7 +28,7 @@ struct AppState {
 struct ModalMessage {
     String text;
     ModalMessageType modalMessageType;
-    int duration = DISPLAY_SHORT_MODAL_TIMEOUT;
+    int duration;
 };
 
 #endif //PORTAL_TYPES_H

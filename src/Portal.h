@@ -13,11 +13,11 @@ enum PortalEvent {
 
 class Portal {
 public:
-    void begin(PortalFramework *pFramework, KeyboardModule *keyboard, LedRing *ledRing);
+    bool begin(PortalFramework *pFramework, KeyboardModule *keyboard, LedRing *ledRing);
 
     void addStageChangeCallback(const std::function<void(PortalStage)> &callback) { stageChangeCallbacks.push_back(callback); }
 
-    void addItemSelectedCallback(const std::function<void(const PriceListEntry&)> &itemName) { itemSelectedCallbacks.push_back(itemName); }
+    void addItemSelectedCallback(const std::function<void(const PriceListEntry &)> &itemName) { itemSelectedCallbacks.push_back(itemName); }
 
     void addPlayerConnectCallback(const std::function<void(_portal_PlayerData)> &callback) {
         playerTagConnectedCallbacks.push_back(callback);
@@ -27,7 +27,21 @@ public:
 
     void addErrorCallback(const std::function<void(const String *)> &callback) { errorCallbacks.push_back(callback); }
 
+    void addWarnCallback(const std::function<void(const String *)> &callback) { warnCallbacks.push_back(callback); }
+
     void addInfoCallback(const std::function<void(const String *, int duration)> &callback) { infoCallbacks.push_back(callback); }
+
+    void showErrorMessage(const String *text) {
+        onErrorMessage(text);
+    }
+
+    void showWarnMessage(const String *text) {
+        onWarnMessage(text);
+    }
+
+    void showInfoMessage(const String *text, int duration = DISPLAY_INFO_TIMEOUT) {
+        onInfoMessage(text, duration);
+    }
 
 private:
     void handleConnectedTag(PlayerData playerData);
@@ -53,6 +67,10 @@ private:
 
     void onErrorMessage(const String *text) {
         for (auto &callback: errorCallbacks) callback(text);
+    }
+
+    void onWarnMessage(const String *text) {
+        for (auto &callback: warnCallbacks) callback(text);
     }
 
     void onInfoMessage(const String *text, int duration = DISPLAY_INFO_TIMEOUT) {
@@ -90,6 +108,7 @@ private:
     std::vector<std::function<void(_portal_PlayerData playerData)>> playerTagConnectedCallbacks;
     std::vector<std::function<void()>> playerTagDisconnectedCallbacks;
     std::vector<std::function<void(const String *)>> errorCallbacks;
+    std::vector<std::function<void(const String *)>> warnCallbacks;
     std::vector<std::function<void(const String *, int duration)>> infoCallbacks;
 };
 

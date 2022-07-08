@@ -52,10 +52,22 @@ void StateManager::begin(Portal *portal, PortalFramework *framework, KeyboardMod
         onStateChange();
     });
 
+    portal->addWarnCallback([this](const String *message) mutable {
+        const ModalMessage mm = ModalMessage{
+                .text = *message,
+                .modalMessageType = ModalMessageType::Warn,
+                .duration = DISPLAY_WARN_TIMEOUT
+        };
+
+        this->modalMessage = mm;
+        onStateChange();
+    });
+
     portal->addErrorCallback([this](const String *message) mutable {
         const ModalMessage mm = ModalMessage{
                 .text = *message,
-                .modalMessageType = ModalMessageType::Error
+                .modalMessageType = ModalMessageType::Error,
+                .duration = DISPLAY_ERROR_TIMEOUT
         };
 
         this->modalMessage = mm;

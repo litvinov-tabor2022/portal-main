@@ -22,15 +22,14 @@ void setup() {
     // wait for monitor open
     delay(500);
 
-    std::optional<std::string> frameworkInitMessage = framework.begin();
-    if (!frameworkInitMessage->empty()) {
-        Debug.printf("Could not initialize framework! Err: %s\n", frameworkInitMessage.value().c_str());
-        return;
-    }
+    std::optional<std::string> frameworkInitMessage = framework.begin(true);
 
     ledRing.begin();
 
-    portal.begin(&framework, &keyboardModule, &ledRing);
+    if (!portal.begin(&framework, &keyboardModule, &ledRing)) {
+        Debug.println("Could not initialize portal!");
+        return;
+    }
 
     stateManager.begin(&portal, &framework, &keyboardModule);
 
@@ -39,9 +38,10 @@ void setup() {
         return;
     }
 
-    if (!keyboardModule.begin()) {
-        Debug.println("Could not initialize keyboard!");
-        return;
+    if (!frameworkInitMessage->empty()) {
+        Debug.printf("Could not initialize framework! Err: %s\n", frameworkInitMessage.value().c_str());
+        const String &err = String(frameworkInitMessage.value().c_str());
+        portal.showErrorMessage(&err);
     }
 
     stateManager.addCallback([](const AppState state) {
@@ -49,7 +49,6 @@ void setup() {
 
         switch (state.mode) {
             case PortalMode::User:
-//                keyboardModule.setReadingEnabled(state.tagPresent);
                 keyboardModule.setReadingEnabled(true);
                 break;
             case PortalMode::Service:
