@@ -100,7 +100,7 @@ char KeyboardModule::keyboardRead() {
 
         if (col > 3) continue;
 
-        key = keyboardKeys[3 - col][3 - row];
+        key = keyboardKeys[row][col];
     }
 
     return key;

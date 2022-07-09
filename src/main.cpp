@@ -22,7 +22,7 @@ void setup() {
     // wait for monitor open
     delay(500);
 
-    std::optional<std::string> frameworkInitMessage = framework.begin(true);
+    std::optional<std::string> frameworkInitMessage = framework.begin(false, true);
 
     ledRing.begin();
 
@@ -42,6 +42,13 @@ void setup() {
         Debug.printf("Could not initialize framework! Err: %s\n", frameworkInitMessage.value().c_str());
         const String &err = String(frameworkInitMessage.value().c_str());
         portal.showErrorMessage(&err);
+    }
+
+    if (!keyboardModule.begin()) {
+        const String msg = String("Could not initialize keyboard!");
+        Debug.println(msg);
+        portal.showErrorMessage(&msg);
+        return;
     }
 
     stateManager.addCallback([](const AppState state) {
