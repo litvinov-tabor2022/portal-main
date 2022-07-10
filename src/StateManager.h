@@ -29,10 +29,13 @@ private:
 
     void reportState();
 
+    void toggleSyncMode();
+
     AppState state = AppState{.mode = Starting};
     std::optional<ModalMessage> modalMessage = std::nullopt;
     std::vector<std::function<void(AppState)>> stateChangeCallbacks;
 
+    Portal *portal;
 };
 
 

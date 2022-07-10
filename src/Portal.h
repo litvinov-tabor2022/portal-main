@@ -45,6 +45,7 @@ public:
 
     [[nodiscard]] PlayerMetadata getPlayerMetadata(u8 userId) const;
 
+    PortalFramework *framework;
     LedRing *ledRing;
 private:
     void handleConnectedTag(PlayerData playerData);
@@ -95,7 +96,6 @@ private:
 
     bool recoverTag();
 
-    PortalFramework *framework;
     PriceList *priceList;
     KeyboardModule *keyboardModule;
 

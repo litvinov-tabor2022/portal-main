@@ -60,6 +60,12 @@ bool Portal::begin(PortalFramework *pFramework, KeyboardModule *keyboard, LedRin
 void Portal::handleConnectedTag(PlayerData playerData) {
     if (framework->isTagConnected()) {
         keyboardModule->clean();
+
+        if (playerData.user_id == ADMIN_USER_ID) {
+            Debug.println("Admin tag inserted, not loading data");
+            return;
+        }
+
         String strSkills = "";
         for (auto skill: playerData.skills) {
             strSkills += static_cast<int>(skill);

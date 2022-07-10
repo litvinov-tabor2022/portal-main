@@ -97,9 +97,11 @@ void Display::draw(const AppState state, const std::optional<ModalMessage> modal
             playerDataStr += "\npocet schopnosti..";
             playerDataStr += String(state.currentPlayerData.skills_count);
         } else {
-            playerDataStr += "Neni vlozen tag!";
-            if (state.mode == PortalMode::Service)
-                playerDataStr += "\nSERVISNI MOD";
+            playerDataStr += "Neni vlozen amulet!";
+            if (state.mode == PortalMode::Service) {
+                playerDataStr += "\nSERVISNI MOD, ID:\n\n";
+                playerDataStr += portal->framework->getDeviceConfig().deviceId;
+            }
         }
     }
 
