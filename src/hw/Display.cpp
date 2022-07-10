@@ -2,8 +2,9 @@
 #include "Display.h"
 #include "HwLocks.h"
 
-bool Display::begin(StateManager *stateManager) {
+bool Display::begin(StateManager *stateManager, Portal *portal) {
     this->stateManager = stateManager;
+    this->portal = portal;
 
     pinMode(PIN_DISPLAY_RESET, OUTPUT);
 
@@ -29,7 +30,7 @@ bool Display::begin(StateManager *stateManager) {
         Debug.println("Display initialized");
     }
 
-    this->stateManager->addCallback([this](const AppState& state) {
+    this->stateManager->addCallback([this](const AppState &state) {
         waitingForRedraw = true;
     });
 
@@ -77,23 +78,29 @@ void Display::draw(const AppState state, const std::optional<ModalMessage> modal
 
     String playerDataStr = "";
 
-    if (state.tagPresent) {
-        playerDataStr += "Hrac ";
-        playerDataStr += String(state.currentPlayerData.user_id);
-        playerDataStr += "\nsila.................";
-        playerDataStr += String(state.currentPlayerData.strength);
-        playerDataStr += "\nobratnost..........";
-        playerDataStr += String(state.currentPlayerData.dexterity);
-        playerDataStr += "\nmagie...............";
-        playerDataStr += String(state.currentPlayerData.magic);
-        playerDataStr += "\nvolne zkusenosti..";
-        playerDataStr += String(state.currentPlayerData.bonus_points);
-        playerDataStr += "\npocet schopnosti..";
-        playerDataStr += String(state.currentPlayerData.skills_count);
+    if (state.mode == PortalMode::Switching) {
+        playerDataStr += "\nCekej!!!";
     } else {
-        playerDataStr += "Neni vlozen tag!";
-        if(state.mode == PortalMode::Service)
-            playerDataStr += "\nSERVISNI MOD";
+        if (state.tagPresent) {
+            playerDataStr += "Hrac ";
+            playerDataStr += String(state.currentPlayerData.user_id);
+            playerDataStr += " (";
+            playerDataStr += portal->getPlayerMetadata(state.currentPlayerData.user_id).name.c_str();
+            playerDataStr += ")\nsila.................";
+            playerDataStr += String(state.currentPlayerData.strength);
+            playerDataStr += "\nobratnost..........";
+            playerDataStr += String(state.currentPlayerData.dexterity);
+            playerDataStr += "\nmagie...............";
+            playerDataStr += String(state.currentPlayerData.magic);
+            playerDataStr += "\nvolne zkusenosti..";
+            playerDataStr += String(state.currentPlayerData.bonus_points);
+            playerDataStr += "\npocet schopnosti..";
+            playerDataStr += String(state.currentPlayerData.skills_count);
+        } else {
+            playerDataStr += "Neni vlozen tag!";
+            if (state.mode == PortalMode::Service)
+                playerDataStr += "\nSERVISNI MOD";
+        }
     }
 
     const String itemSelected =

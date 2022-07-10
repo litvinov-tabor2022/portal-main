@@ -43,6 +43,9 @@ public:
         onInfoMessage(text, duration);
     }
 
+    [[nodiscard]] PlayerMetadata getPlayerMetadata(u8 userId) const;
+
+    LedRing *ledRing;
 private:
     void handleConnectedTag(PlayerData playerData);
 
@@ -94,12 +97,12 @@ private:
 
     PortalFramework *framework;
     PriceList *priceList;
-    LedRing *ledRing;
     KeyboardModule *keyboardModule;
 
     bool flagCodeEntered = false;
     bool flagTagDisconnected = false;
     PlayerData currentPlayerData = portal_PlayerData_init_zero;
+    PlayersMetadata *playersMetadata;
 
     String lastCodeEntered = "";
 

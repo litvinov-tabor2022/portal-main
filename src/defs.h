@@ -10,7 +10,7 @@ enum PortalStage {
 };
 
 enum PortalMode {
-    Starting, User, Service
+    Starting, User, Switching, Service
 };
 
 enum ModalMessageType {

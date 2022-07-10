@@ -33,7 +33,7 @@ void setup() {
 
     stateManager.begin(&portal, &framework, &keyboardModule);
 
-    if (!display.begin(&stateManager)) {
+    if (!display.begin(&stateManager, &portal)) {
         Debug.println("Could not initialize display!");
         return;
     }

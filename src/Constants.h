@@ -28,7 +28,7 @@
 #define SCREEN_HEIGHT 64
 
 #define DISPLAY_ERROR_TIMEOUT 15000
-#define DISPLAY_WARN_TIMEOUT 2000
+#define DISPLAY_WARN_TIMEOUT 5000
 #define DISPLAY_INFO_TIMEOUT 2000
 
 #define I2C_ADDR_KEYBOARD 0x20
@@ -44,6 +44,6 @@
 const String helpSelected = "(# - potvrdit)\n(* - zrusit zadani)";
 
 const String RECOVERY_CODE = "C9";
-const String SYNC_CODE = "C2580";
+const String SYNC_CODE = "C1";
 
 #endif //PORTAL_CONSTANTS_H

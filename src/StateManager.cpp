@@ -7,15 +7,30 @@ void StateManager::begin(Portal *portal, PortalFramework *framework, KeyboardMod
     pinMode(PIN_MODE, INPUT_PULLUP);
 
     this->state.mode = User;
-    keyboard->addCallback([this, framework] (const String& code) mutable  {
-        if(code == SYNC_CODE){
-            Serial.println("Entering sync mode");
-            framework->synchronizationMode.toggle();
-            const PortalMode oldMode = this->state.mode;
-            const PortalMode newMode = oldMode == User ? Service : User;
-
-            this->state.mode = newMode;
+    keyboard->addCallback([this, framework, portal](const String &code) mutable {
+        if (code == SYNC_CODE) {
+            portal->ledRing->asyncBlink(LEDRING_COLOR_ORANGE);
+            Debug.println("Entering sync mode");
+            this->state.mode = Switching;
             onStateChange();
+
+            String msg = String("Cekej!!!");
+            portal->showInfoMessage(&msg);
+
+            if (!framework->synchronizationMode.toggle()) {
+                msg = String("Could not switch mode");
+                Debug.println(msg);
+                portal->showErrorMessage(&msg);
+            }
+
+            this->state.mode = framework->synchronizationMode.isStarted() ? Service : User;
+            onStateChange();
+        } else {
+            if (code.charAt(0) == 'C') {
+                const String msg = String("Invalid control code: " + code);
+                Debug.println(msg);
+                portal->showInfoMessage(&msg, 1000);
+            }
         }
     });
 
@@ -24,7 +39,7 @@ void StateManager::begin(Portal *portal, PortalFramework *framework, KeyboardMod
         onStateChange();
     });
 
-    portal->addItemSelectedCallback([this](const PriceListEntry& item) mutable {
+    portal->addItemSelectedCallback([this](const PriceListEntry &item) mutable {
         this->state.itemToConfirm = PriceListEntry(item);
         onStateChange();
     });
@@ -119,7 +134,7 @@ void StateManager::reportState() {
 
     Debug.printf(
             "STATE=[ mode %s; stage %s; tag%s inserted%s]\n",
-            state.mode == User ? "User" : "Service",
+            state.mode == User ? "User" : state.mode == Service ? "Service" : "Switching",
             stageStr.c_str(),
             state.tagPresent ? "" : " NOT",
             playerDataStr.c_str()

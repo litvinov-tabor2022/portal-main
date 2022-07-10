@@ -7,10 +7,14 @@ bool Portal::begin(PortalFramework *pFramework, KeyboardModule *keyboard, LedRin
     this->framework = pFramework;
     this->ledRing = ledRing;
     this->keyboardModule = keyboard;
-    this->priceList = framework->resources.loadPriceList();
 
-    if (this->priceList == nullptr) {
+    if ((this->priceList = framework->resources.loadPriceList()) == nullptr) {
         Debug.println("Could not load pricelist");
+        return false;
+    }
+
+    if ((playersMetadata = framework->resources.loadPlayersMeta()) == nullptr) {
+        Debug.println("Could not load players metadata!");
         return false;
     }
 
@@ -256,4 +260,8 @@ bool Portal::stage4(const PriceListEntry *entry) {
 
 bool Portal::recoverTag() {
     return this->framework->writePlayerData(currentPlayerData);
+}
+
+PlayerMetadata Portal::getPlayerMetadata(const u8 userId) const {
+    return playersMetadata->getPlayerMetadata(userId);
 }

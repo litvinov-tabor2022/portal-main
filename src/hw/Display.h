@@ -11,7 +11,7 @@
 
 class Display {
 public:
-    bool begin(StateManager *stateManager);
+    bool begin(StateManager *stateManager, Portal *portal);
 
     TFT_eSPI tft;
 private:
@@ -24,6 +24,7 @@ private:
     u64 displayingModalUntil = 0;
 
     StateManager *stateManager;
+    Portal *portal;
 };
 
 
