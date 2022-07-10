@@ -51,23 +51,6 @@ void setup() {
         return;
     }
 
-    stateManager.addCallback([](const AppState state) {
-        // TODO in prod, it will switch HTTP server here
-
-        switch (state.mode) {
-            case PortalMode::User:
-                keyboardModule.setReadingEnabled(true);
-                break;
-            case PortalMode::Service:
-                ledRing.makeSpiral(LEDRING_COLOR_ORANGE);
-                keyboardModule.setReadingEnabled(true);
-                break;
-            case PortalMode::Starting:
-                // no-op
-                break;
-        }
-    });
-
     ledRing.makeSpiral(LEDRING_COLOR_GREEN);
     Debug.println("Setup finished");
     Debug.println("------------------------------------\n");

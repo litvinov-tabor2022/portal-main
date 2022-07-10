@@ -17,8 +17,6 @@ public:
 
     void addCallback(const std::function<void(String)> &callback);
 
-    void setReadingEnabled(bool enabled) { this->readingEnabled = enabled; }
-
     void clean();
 
 private:
@@ -30,7 +28,6 @@ private:
 
     PCF8574 *pcf;
 
-    bool readingEnabled = false;
     String pressedKeyBuffer;
     char lastKey = 0;
     unsigned long lastKeyTime = 0;

@@ -27,7 +27,7 @@ bool KeyboardModule::begin() {
     }
 
     Core0.loopEvery("handleKeyPress", 10, [this] {
-        if (this->readingEnabled) handleKeyPress();
+        handleKeyPress();
     });
 
     return true;
